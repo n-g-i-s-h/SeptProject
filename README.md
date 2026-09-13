@@ -1,20 +1,43 @@
-# Meridian Atelier — Rebuild V7
+# Meridian Atelier
 
-V7 fixes the stuck artwork transition from V4/V7.
+A single-page scrollytelling site: a pinned canvas dissolves between five
+procedurally-drawn scenes using a halftone dot effect, driven entirely by
+scroll position. No images — every scene is drawn with math in
+`src/MeridianAtelier.jsx`.
 
-## What changed
-- The main animation loop reads the actual scroll position continuously instead of depending on scroll events.
-- The background artwork has two real image layers that crossfade while the particle field morphs between them.
-- Particles disperse in the middle of each scene transition and reconverge into the next image.
-- The particle canvas and image layers share the same composition on the right side.
-- Scene text remains isolated so it cannot stack.
-- Responsive and reduced-motion support remain included.
+## Run it
 
-## Run
 ```bash
 npm install
 npm run dev
 ```
 
+Then open the printed local URL (usually http://localhost:5173).
 
-V7 replaces the layered-image approach with a single particle-rendered artwork. Each image is sampled on a shared normalized grid so particles move from corresponding source cells into target cells. The midpoint is deliberately sparse, creating the visible dissolve/reform seen in the reference direction.
+## Build for production
+
+```bash
+npm run build
+npm run preview   # to check the build locally
+```
+
+`npm run build` outputs static files to `dist/`, which you can deploy
+anywhere that serves static sites (Netlify, Vercel, GitHub Pages, S3, etc.).
+
+## Where to edit
+
+- `src/MeridianAtelier.jsx` — everything lives here:
+  - `SCENES` — the copy (headline/body/CTA) for each of the five scenes.
+  - `paintHero`, `paintBotanical`, `paintSky`, `paintCraft`, `paintOutro` —
+    the procedural background for each scene. Each takes a point `(u, v)`
+    in 0..1 and returns an `[r, g, b]` color.
+  - `Stage` — the canvas that reads scroll progress and draws the halftone
+    dissolve between the current and next scene.
+  - `SceneCopy` — the text overlay that crossfades alongside the dissolve.
+
+To add a scene: add an entry to `SCENES` and a matching `paint*` function,
+then add it to the `PAINTERS` array in the same position.
+
+To swap in a real photo instead of a procedural background: load the image
+into an offscreen canvas once, call `getImageData`, and replace a `paint*`
+function's math with a pixel lookup at `(u * width, v * height)`.
